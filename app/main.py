@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Form, Request
+from fastapi.templating import Jinja2Templates
 import json
 import pickle
 from pathlib import Path
@@ -10,40 +11,38 @@ project_dir = Path('__main__').resolve().parent.parent
 
 app = FastAPI()
 
+templates = Jinja2Templates(directory="templates")
+
 class Payload(BaseModel):
-    url_length : float
-    n_dots : float
-    n_hypens : float
-    n_underline : float
-    n_slash : float
-    n_questionmark : float
-    n_equal : float
-    n_at : float
-    n_and : float
-    n_exclamation : float
-    n_space : float
-    n_tilde : float
-    n_comma : float
-    n_plus : float
-    n_asterisk : float
-    n_hastag : float
-    n_dollar : float
-    n_percent : float
-    n_redirection : float
+    url : str
     
 class Score(BaseModel):
     score : int
 
-clf = pickle.load(open(os.path.join(project_dir, 'models', 'model.pkl'), 'rb'))
+model = pickle.load(open(os.path.join(project_dir, 'models', 'pipeline-model.pkl'), 'rb'))
 
 @app.get("/")
-def get_home():
-    return "API ML Phishing URL"
+def get_home(request : Request):
+    return templates.TemplateResponse("index.html", {"request" : request})
+
+
+def predict(payload):
+    payload = pd.DataFrame([payload.model_dump()])
+    score = round(model.predict_proba(payload)[:,1][0]*1000,0)
+    return score
+
+
+@app.post("/")
+def post_home(request : Request, url : str = Form(...)):
+    payload = Payload(url=url)
+    score = predict(payload)
+
+    return templates.TemplateResponse("index_scored.html", {"request" : request, "url" : payload.url, "score" : score})
+
 
 @app.post("/predict", response_model=Score, status_code=200)
 def get_prediction(payload : Payload):
     
-    payload = pd.DataFrame([payload.dict()])
-    score = round(clf.predict_proba(payload)[:,1][0]*1000,0)
+    score = predict(payload)
 
     return {'score' : score}
