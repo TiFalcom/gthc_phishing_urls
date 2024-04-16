@@ -9,7 +9,7 @@ import pandas as pd
 
 app = FastAPI()
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=os.path.join("app", "templates"))
 
 class Payload(BaseModel):
     url : str
