@@ -15,8 +15,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ],
-    python_requires='>=3.12',
+    python_requires='>=3.10',
     install_requires=[
-        "pandas==2.2.1"
+        #"pandas==2.2.1"
     ],
 )
