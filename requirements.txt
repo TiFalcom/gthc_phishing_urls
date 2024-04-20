@@ -64,7 +64,7 @@ seaborn==0.13.2
 six==1.16.0
 sniffio==1.3.1
 SQLAlchemy==2.0.29
--e git+https://github.com/TiFalcom/gthc_phishing_urls.git@d63aa05987ad6461a8fe1a35ec086c48bc58a14d#egg=src&subdirectory=src
+-e git+https://github.com/TiFalcom/gthc_phishing_urls.git@badb84f2d9b891f6f4acc0ddbdf7045413c9d6fb#egg=src&subdirectory=src
 stack-data==0.6.3
 starlette==0.37.2
 statsmodels==0.14.1
