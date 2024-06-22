@@ -13,3 +13,4 @@ PyYAML
 pydantic
 python-multipart
 jinja2
+graphviz
