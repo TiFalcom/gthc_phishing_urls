@@ -1,32 +1,55 @@
-#Vou fazer um get na raiz com hello world
-#Vou fazer uma api para fazer get e testar em notebook
-#Vou mostrar o caso com uma home page onde é possível obter o score
-
-
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Form, Request
+from fastapi.templating import Jinja2Templates
+import json
 import pickle
+from pathlib import Path
+from pydantic import BaseModel
 import os
 import pandas as pd
 
 app = FastAPI()
 
-class Payload(BaseModel):
-    url : str
+templates = Jinja2Templates(directory=os.path.join("app", "templates"))
 
-class Score(BaseModel):
+class ClasseURL(BaseModel):
+    url : str
+    
+
+class ClasseScore(BaseModel):
     score : float
 
-model = pickle.load(open(os.path.join('models', 'pipeline-model.pkl'), 'rb'))
 
-def predict(payload):
-    payload = pd.DataFrame([payload.model_dump()])
-    score = round(model.predict_proba(payload)[:,1][0]*1000,0)
+model = pickle.load(open('app/models/pipeline-model.pkl', 'rb'))
+
+
+def predict(classe_url):
+    url = pd.DataFrame([classe_url.model_dump()])
+    score = round(model.predict_proba(url)[:,1][0]*1000, 0)
     return score
 
-@app.get("/api/v1/predict", response_model=Score, status_code=200)
-def get_prediction(payload : Payload):
-    
+
+
+@app.get("/")
+def get_home(request : Request):
+    return templates.TemplateResponse("index.html", {"request" : request})
+
+
+@app.post("/")
+def post_home(request : Request, url : str = Form(...)):
+    payload = ClasseURL(url=url)
     score = predict(payload)
 
-    return {'score' : score}
+    return templates.TemplateResponse("index_scored.html", {"request" : request, "url" : payload.url, "score" : score})
+
+
+
+@app.post('/e_phishing', response_model=ClasseScore)
+def get_prediction(classe_url : ClasseURL):
+    score = predict(classe_url)
+    return {"score" : score}
+
+
+
+@app.get("/ola_mundo")
+def home():
+    return {"Ola Mundo!" : "Minha primeira aplicacao"}
