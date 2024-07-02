@@ -11,18 +11,23 @@ app = FastAPI()
 
 templates = Jinja2Templates(directory=os.path.join("app", "templates"))
 
-class Payload(BaseModel):
+class ClasseURL(BaseModel):
     url : str
     
-class Score(BaseModel):
-    score : int
 
-model = pickle.load(open(os.path.join('models', 'pipeline-model.pkl'), 'rb'))
+class ClasseScore(BaseModel):
+    score : float
 
-def predict(payload):
-    payload = pd.DataFrame([payload.model_dump()])
-    score = round(model.predict_proba(payload)[:,1][0]*1000,0)
+
+model = pickle.load(open('app/models/pipeline-model.pkl', 'rb'))
+
+
+def predict(classe_url):
+    url = pd.DataFrame([classe_url.model_dump()])
+    score = round(model.predict_proba(url)[:,1][0]*1000, 0)
     return score
+
+
 
 @app.get("/")
 def get_home(request : Request):
@@ -31,15 +36,20 @@ def get_home(request : Request):
 
 @app.post("/")
 def post_home(request : Request, url : str = Form(...)):
-    payload = Payload(url=url)
+    payload = ClasseURL(url=url)
     score = predict(payload)
 
     return templates.TemplateResponse("index_scored.html", {"request" : request, "url" : payload.url, "score" : score})
 
 
-@app.post("/api/v1/predict", response_model=Score, status_code=200)
-def get_prediction(payload : Payload):
-    
-    score = predict(payload)
 
-    return {'score' : score}
+@app.post('/e_phishing', response_model=ClasseScore)
+def get_prediction(classe_url : ClasseURL):
+    score = predict(classe_url)
+    return {"score" : score}
+
+
+
+@app.get("/ola_mundo")
+def home():
+    return {"Ola Mundo!" : "Minha primeira aplicacao"}
