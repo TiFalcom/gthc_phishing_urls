@@ -19,7 +19,7 @@ class ClasseScore(BaseModel):
     score : float
 
 
-model = pickle.load(open('app/models/pipeline-model.pkl', 'rb'))
+model = pickle.load(open('models/pipeline-model.pkl', 'rb'))
 
 
 def predict(classe_url):
